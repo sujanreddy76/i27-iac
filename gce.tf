@@ -75,7 +75,7 @@ resource "google_compute_instance" "tf-vm-instance" {
 
 #Data block for image
 data "google_compute_image" "ubuntu_image" {
-    family = "ubuntu-2004-lts"
+    name = "ubuntu-2004-focal-v20250213"
     project = "ubuntu-os-cloud"
   
 }
