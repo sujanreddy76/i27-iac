@@ -34,3 +34,9 @@ output "jenkins_master_ssh_command" {
 output "jenkins_slave_ssh_command" {
     value = "To connect to jenkins-slave, use this command: ssh -i id_rsa ${var.vm_user}@${google_compute_instance.tf-vm-instance["jenkins-slave"].network_interface.0.access_config[0].nat_ip}"
 }
+output "sonarqube_ssh_command" {
+    value = "To connect to sonarqube, use this command: ssh -i id_rsa ${var.vm_user}@${google_compute_instance.tf-vm-instance["sonarqube"].network_interface.0.access_config[0].nat_ip}"
+}
+output "docker_server_ssh_command" {
+    value = "To connect to docker-server, use this command: ssh -i id_rsa ${var.vm_user}@${google_compute_instance.tf-vm-instance["docker-server"].network_interface.0.access_config[0].nat_ip}"
+}
