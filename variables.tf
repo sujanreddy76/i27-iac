@@ -24,7 +24,13 @@ variable "instances" {
 # VM User name
 variable "vm_user" {
   description = "Username to connect to GCE"
-  type = string
-  
-  
+  type        = string
+
+
+}
+
+# Firewall source ranges
+variable "source_ranges" {
+  description = "source ranges for firewall"
+  type        = set(string)
 }
