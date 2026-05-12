@@ -27,6 +27,7 @@ resource "google_compute_instance" "tf-vm-instance" {
   name         = each.key
   machine_type = each.value.instance_type
   zone         = each.value.zone
+  # Below is for boot disk os
   boot_disk {
     initialize_params {
       image = data.google_compute_image.ubuntu_image.self_link #The URI of the image.
@@ -34,6 +35,7 @@ resource "google_compute_instance" "tf-vm-instance" {
       type  = "pd-standard"
     }
   }
+  # Below is for network configurations
   network_interface {
     network    = google_compute_network.i27-ecommerce-vpc.self_link
     subnetwork = google_compute_subnetwork.i27-ecommerce-subnets[each.value.subnet].self_link
@@ -41,6 +43,7 @@ resource "google_compute_instance" "tf-vm-instance" {
       // Ephemeral public IP
     }
   }
+  # Below is to place the public key inside the VM
   metadata = {
     # key format: username:public_key
     ssh-keys = "${var.vm_user}:${tls_private_key.i27-ecommerce-key.public_key_openssh}"
