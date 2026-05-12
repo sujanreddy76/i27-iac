@@ -49,6 +49,20 @@ resource "google_compute_instance" "tf-vm-instance" {
     ssh-keys = "${var.vm_user}:${tls_private_key.i27-ecommerce-key.public_key_openssh}"
   }
 
+  # Connection block to connect to the instances
+  connection {
+    host        = self.network_interface.0.access_config.0.nat_ip
+    type        = "ssh"
+    user        = var.vm_user
+    private_key = tls_private_key.i27-ecommerce-key.private_key_pem
+  }
+
+  # file provisioner block to copy local file to remote inatances
+  provisioner "file" {
+    source      = each.key == "ansible" ? "ansible.sh" : "empty.sh"
+    destination = each.key == "ansible" ? "/home/${var.vm_user}/ansible.sh" : "/home/${var.vm_user}/empty.sh"
+  }
+
 }
 
 #Data block for image
