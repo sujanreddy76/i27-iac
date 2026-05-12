@@ -1,3 +1,26 @@
+# Generate a SSH Keypair
+# tls_private_key resource will generate public and private keys
+resource "tls_private_key" "i27-ecommerce-key" {
+  algorithm = "RSA"
+  rsa_bits = 2048
+}
+
+# Save the private key which we generated above(tls_private_key) to local file
+# local_file resource Generates a local file with the given content
+resource "local_file" "i27-ecommerce-key-private" {
+  content = tls_private_key.i27-ecommerce-key.private_key_pem
+  filename = "${path.module}/id_rsa" //${path.module} means: Current module directory.
+  
+}
+
+# Save the public key which we generated above(tls_private_key) to local file
+# local_file resource Generates a local file with the given content
+resource "local_file" "i27-ecommerce-key-public" {
+  content = tls_private_key.i27-ecommerce-key.public_key_openssh
+  filename = "${path.module}/id_rsa.pub" //${path.module} means: Current module directory.
+  
+}
+
 # Create Multiple Instances of GCE for our i27 infra
 resource "google_compute_instance" "tf-vm-instance" {
   for_each     = var.instances
@@ -17,6 +40,10 @@ resource "google_compute_instance" "tf-vm-instance" {
     access_config {
       // Ephemeral public IP
     }
+  }
+  metadata = {
+    # key format: username:public_key
+    ssh-keys = "${var.vm_user}:${tls_private_key.i27-ecommerce-key.public_key_openssh}"
   }
 
 }

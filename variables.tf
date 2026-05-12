@@ -21,3 +21,10 @@ variable "instances" {
   }))
 
 }
+# VM User name
+variable "vm_user" {
+  description = "Username to connect to GCE"
+  type = string
+  
+  
+}
