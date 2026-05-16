@@ -1,0 +1,42 @@
+# This Playbook is used to install Jenkins and the Prequiste of jenkins is Java
+---
+- name: Install Java and jenkins 
+  hosts: jenkins-master
+  become: yes
+  tasks:
+    - name: Install java
+      # apt install fontconfig openjdk-21-jre
+      apt:
+        update_cache: yes
+        name: openjdk-21-jre
+    - name: Add Jenkins Repository Key 
+      #  https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key
+      get_url:
+        url: https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key
+        dest: /etc/apt/keyrings/jenkins-keyring.asc
+        mode: '0644'
+    - name: Add Jenkins Repository
+      # https://pkg.jenkins.io/debian-stable binary/ 
+      apt_repository:
+        repo: "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/"
+        state: present
+    - name: Install Jenkins
+      # sudo apt install jenkins
+      apt:
+        name: jenkins
+        state: present
+    - name: Start Jenkins Service
+      service:
+        name: jenkins
+        state: started
+    - name: Enable Jenkins Service  
+      service: 
+        name: jenkins
+        enabled: true   
+    - name: store the initialAdminPassword 
+      shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+      register: initial_admin_password
+    - name: display the content of initialAdminPassword
+      debug: 
+        var: initial_admin_password.stdout      
+  
