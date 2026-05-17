@@ -7,8 +7,9 @@
     - name: Install java
       # apt install fontconfig openjdk-21-jre
       apt:
-        update_cache: yes
         name: openjdk-21-jre
+        update_cache: yes 
+        state: present #default also present       
     - name: Add Jenkins Repository Key 
       #  https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key
       get_url:
