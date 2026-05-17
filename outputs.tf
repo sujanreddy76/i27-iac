@@ -19,5 +19,5 @@ output "jenkins_master_ssh_command" {
 }
 
 output "jenkins_slave_ssh_command" {
-  value = "To connect to jenkins, use this command: ssh -i id_rsa ${var.vm_user}@${google_compute_instance.tf-vm-instance["jenkins-master"].network_interface.0.access_config.0.nat_ip}"
+  value = "To connect to jenkins, use this command: ssh -i id_rsa ${var.vm_user}@${google_compute_instance.tf-vm-instance["jenkins-slave"].network_interface.0.access_config.0.nat_ip}"
 }
