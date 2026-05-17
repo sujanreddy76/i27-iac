@@ -65,17 +65,17 @@ resource "google_compute_instance" "tf-vm-instance" {
 
   # remote-exec provisioner to execute on the remote machine
   provisioner "remote-exec" {
-    inline = [ 
+    inline = [
       each.key == "ansible" ? "chmod +x /home/${var.vm_user}/ansible.sh && /home/${var.vm_user}/ansible.sh" : "echo 'Not an Ansible Instance'"
-     ]
-    
+    ]
+
   }
 
   # File provisioner to copy private key to all the vm's
   provisioner "file" {
-    source = "${path.module}/id_rsa"
+    source      = "${path.module}/id_rsa"
     destination = "/home/${var.vm_user}/ssh-key"
-    
+
   }
 
 }
