@@ -1,7 +1,7 @@
 # This Playbook is used to install Jenkins and the Prequiste of jenkins is Java
 ---
 - name: Install Java and jenkins 
-  hosts: jenkins-master
+  hosts: jenkins_master
   become: yes
   tasks:
     - name: Install java
