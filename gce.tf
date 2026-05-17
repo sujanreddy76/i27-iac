@@ -77,6 +77,12 @@ resource "google_compute_instance" "tf-vm-instance" {
     destination = "/home/${var.vm_user}/ssh-key"
 
   }
+  # Change permission of private key
+  provisioner "remote-exec" {
+    inline = [
+      "chmod 400 /home/${var.vm_user}/ssh-key"
+    ]
+  }
 
 }
 
