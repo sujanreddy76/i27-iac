@@ -1,0 +1,148 @@
+---
+ #SonarQube Playbook
+
+# This playbook installs and configures Java, Maven, and SonarQube,
+# sets up environment variables, manages file permissions,
+# and starts the SonarQube service on the target machine.
+
+# TASKS INCLUDED IN THIS PLAYBOOK
+# 1. Create a sonar user with home directory.
+# 2. Add the sonar user to the sudoers file for passwordless sudo.
+# 3. Install OpenJDK 17 from Ubuntu repository.
+# 4. Download and install Maven 3.8.8.
+# 5. Install unzip package.
+# 6. Download and install SonarQube 9.9.3.
+# 7. Move installed directories to simpler paths.
+# 8. Add environment variables.
+# 9. Load environment variables.
+# 10. Set ownership and permissions for SonarQube.
+# 11. Configure SonarQube to run as sonar user.
+# 12. Copy SonarQube systemd service file.
+# 13. Enable and start SonarQube service.
+
+---
+- name: Installing Java and SonarQube
+  hosts: sonarqube
+  become: true
+  gather_facts: true
+
+  tasks:
+
+    # Create sonar user
+    - name: Create sonar user
+      user:
+        name: sonar
+        create_home: yes
+        state: present
+
+    # Add sonar user to sudoers file for no password prompt
+    - name: Add sonar user to sudoers file
+      lineinfile:
+        path: /etc/sudoers
+        state: present
+        regexp: '^%wheel ALL=' # Regular expression to identify the right line
+        line: 'sonar ALL=(ALL) NOPASSWD: ALL'  # Grant sonar user sudo privileges
+        validate: /usr/sbin/visudo -cf %s # validate the sudoers file
+
+    # Install OpenJDK 17 from Ubuntu repository
+    - name: Install OpenJDK 17
+      apt:
+        name: openjdk-17-jdk
+        state: present
+        update_cache: yes
+
+    # Install unzip package
+    - name: Install unzip package
+      apt:
+        name: unzip
+        state: present
+
+    # Download and extract Maven
+    - name: Download and extract Maven
+      unarchive:
+        src: https://archive.apache.org/dist/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz
+        dest: /opt/
+        remote_src: yes
+        copy: no #Do not keep a local copy of the archive
+
+    # Rename Maven directory
+    - name: Move Maven to simpler path
+      command: mv /opt/apache-maven-3.8.8 /opt/maven388
+      args:
+        creates: /opt/maven388
+        removes: /opt/apache-maven-3.8.8
+
+    # Download and extract SonarQube
+    - name: Install and configure SonarQube
+      unarchive:
+        src: https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.9.3.79811.zip
+        dest: /opt/
+        remote_src: yes
+
+    # Rename SonarQube directory
+    - name: Move SonarQube directory to simpler path
+      command: mv /opt/sonarqube-9.9.3.79811 /opt/sonarqube993
+      args:
+        creates: /opt/sonarqube993
+        removes: /opt/sonarqube-9.9.3.79811
+
+    # Add environment variables for java, maven, and sonar
+    - name: Add environment variables
+      blockinfile:
+        path: /etc/profile #system-wide profile to set environment variables
+        state: present
+        marker: "# {mark} ANSIBLE MANAGED BLOCK"
+        block: |
+          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+          export MAVEN_HOME=/opt/maven388
+          export SONAR_JAVA_PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin/java
+          export PATH=$PATH:$JAVA_HOME/bin:$MAVEN_HOME/bin
+
+    # Load environment variables
+    - name: Source /etc/profile
+      shell: source /etc/profile
+      args:
+        executable: /bin/bash
+
+    # Set ownership and permissions
+    - name: Change ownership and permissions
+      file:
+        path: /opt/sonarqube993
+        owner: sonar
+        group: sonar
+        mode: '0775'
+        recurse: true
+
+    # Configure sonar.sh to run as sonar user
+    - name: Configure SonarQube script
+      lineinfile:
+        path: /opt/sonarqube993/bin/linux-x86-64/sonar.sh
+        regexp: '^#RUN_AS_USER='
+        line: 'RUN_AS_USER=sonar'
+
+    # Copy SonarQube service file
+    - name: Copy startup service script
+      template:
+        # The template module automatically looks for source files inside the templates/ directory.
+        # If the file is placed outside templates/, Ansible may fail to locate it.
+        src: sonar.service
+        dest: /etc/systemd/system/sonar.service
+        owner: root
+        group: root
+        mode: '0755'
+
+    # Reload systemd
+    - name: Reload systemd daemon
+      systemd:
+        daemon_reload: yes
+
+    # Enable and start SonarQube service
+    - name: Start SonarQube service
+      systemd:
+        name: sonar
+        enabled: yes
+        state: started           
+            
+
+
+

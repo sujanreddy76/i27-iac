@@ -1,0 +1,24 @@
+[Unit]
+Description=SonarQube service
+After=network.target
+
+[Service]
+Type=forking
+
+User=sonar
+Group=sonar
+
+ExecStart=/opt/sonarqube993/bin/linux-x86-64/sonar.sh start
+ExecStop=/opt/sonarqube993/bin/linux-x86-64/sonar.sh stop
+ExecReload=/opt/sonarqube993/bin/linux-x86-64/sonar.sh restart
+
+PIDFile=/opt/sonarqube993/bin/linux-x86-64/SonarQube.pid
+
+Restart=always
+LimitNOFILE=131072
+LimitNPROC=8192
+TimeoutStartSec=60
+SuccessExitStatus=143
+
+[Install]
+WantedBy=multi-user.target
