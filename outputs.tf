@@ -23,10 +23,10 @@ output "jenkins_slave_ssh_command" {
 }
 
 output "sonarqube_ssh_command" {
-  value = "To connect to sonarqube, use this command: ssh -i id_rsa ${var.vm_user}@${google_compute_instance.tf-vm-instance["sonarqube"].network_interface.0.access_config.0.nat_ip}"
+  value = "To connect to sonarqube, use this command: ssh -i id_rsa ${var.vm_user}@${google_compute_instance.tf-vm-instance["sonarqube-server"].network_interface.0.access_config.0.nat_ip}"
 }
 
 output "docker_ssh_command" {
-  value = "To connect to docker, use this command: ssh -i id_rsa ${var.vm_user}@${google_compute_instance.tf-vm-instance["docker"].network_interface.0.access_config.0.nat_ip}"
+  value = "To connect to docker, use this command: ssh -i id_rsa ${var.vm_user}@${google_compute_instance.tf-vm-instance["docker-server"].network_interface.0.access_config.0.nat_ip}"
 }
 
