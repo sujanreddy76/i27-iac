@@ -75,5 +75,20 @@
         group: "{{ user_name }}"
         recurse: true  #ensures ownership is applied recursively
 
+    # Install docker
+    - name: Update apt package manager
+      apt:
+        update_cache: yes
+    - name: Install docker
+      apt: 
+        name: docker.io 
+        state: present  
+    - name: Add user '{{ user_name }}' to the doker group
+      user:
+        name: "{{ user_name }}"
+        groups: docker
+        append: yes 
+               
+
 
       

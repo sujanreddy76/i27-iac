@@ -1,0 +1,91 @@
+# This playbook performs the following tasks:
+# 1. Updates the apt package cache.
+# 2. Installs Docker on the target machine.
+# 3. Adds an existing Linux user to the Docker group so Docker commands can run without sudo.
+# 4. Creates a new regular user for Docker administration.
+# 5. Sets a password for the new user using variables from secret_vars.yaml.
+# 6. Enables password-based SSH authentication.
+# 7. Restarts the SSH service to apply configuration changes.
+# 8. Grants sudo privileges to the new user by adding an entry in the sudoers file.
+# 9. # Add docker user to docker group
+
+---
+- hosts: dockerserver
+  become: true
+
+  vars:
+    linux_user: karrireddy
+    docker_user: john
+
+  vars_files:
+    - secret_vars.yaml
+
+  tasks:
+
+    # Update apt package cache
+    - name: Update apt package cache
+      apt:
+        update_cache: yes
+
+    # Install Docker
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+
+    # Add existing Linux user to docker group
+    - name: Add user '{{ linux_user }}' to docker group
+      user:
+        name: "{{ linux_user }}"
+        groups: docker
+        append: yes
+
+    # Create a regular user with home directory and bash shell
+    - name: Create user '{{ docker_user }}'
+      user:
+        name: "{{ docker_user }}"
+        create_home: yes
+        shell: /bin/bash
+        system: no
+        state: present
+
+    # Set password for the newly created user
+    - name: Set password for user '{{ docker_user }}'
+      user:
+        name: "{{ docker_user }}"
+        password: "{{ docker_user_password | password_hash('sha512') }}"
+
+    # Enable password authentication in SSH
+    - name: Enable password authentication in SSH
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication yes'
+
+    # Comment out Include directive to avoid overriding SSH settings
+    - name: Comment out Include directive in sshd_config
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^\s*Include\s+/etc/ssh/sshd_config\.d/\*\.conf'
+        line: '#Include /etc/ssh/sshd_config.d/*.conf'
+
+    # Restart SSH service to apply configuration changes
+    - name: Restart SSH service
+      service:
+        name: ssh
+        state: restarted
+
+    # Grant sudo privileges to the new user
+    - name: Add '{{ docker_user }}' to sudoers file
+      lineinfile:
+        path: /etc/sudoers
+        insertafter: EOF
+        line: '{{ docker_user }} ALL=(ALL:ALL) ALL'
+        validate: '/usr/sbin/visudo -cf %s' # Validate the sudoers file syntax using visudo before applying changes
+
+    # Add docker user to docker group
+    - name: Add user '{{ docker_user }}' to docker group
+      user:
+        name: "{{ docker_user }}"
+        groups: docker
+        append: yes    
