@@ -88,6 +88,12 @@
         name: "{{ user_name }}"
         groups: docker
         append: yes 
+
+    # Install sshpass package
+    - name: Install sshpass
+      apt:
+        name: sshpass
+        state: present    
                
 
 
