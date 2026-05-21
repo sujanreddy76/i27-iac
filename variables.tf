@@ -34,3 +34,16 @@ variable "source_ranges" {
   description = "source ranges for firewall"
   type        = set(string)
 }
+
+# GKE CLuster name
+variable "gke_cluster_details" {
+  description = "Enter the details of the GKE cluster"
+  type = object({
+    name = string
+    location = string
+    initial_node_count = number
+    machine_type = string
+    disk_size_gb = number
+  })
+  
+}
